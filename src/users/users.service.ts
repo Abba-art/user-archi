@@ -1,35 +1,37 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { User } from 'types/usersTypes'
+import { CreateUserDto } from './dto/create-user.dto'
+import { UpdateUserDto } from './dto/update-user.dto'
 
 @Injectable()
 export class UsersService {
     private users: User[] = [
         {
-            id: '1',
+            id: 1,
             name: 'John Doe 1',
             email: 'johndoe@gmail.com',
             role: 'user',
         },
         {
-            id: '2',
+            id: 2,
             name: 'John Doe 2',
             email: 'johndoe@gmail.com',
             role: 'user',
         },
         {
-            id: '3',
+            id: 3,
             name: 'John Doe 2',
             email: 'johndoe@gmail.com',
             role: 'user',
         },
         {
-            id: '4',
+            id: 4,
             name: 'John Doe 3',
             email: 'johndoe@gmail.com',
             role: 'user',
         },
         {
-            id: '5',
+            id: 5,
             name: 'John Doe 4',
             email: 'johndoe@gmail.com',
             role: 'user',
@@ -38,27 +40,34 @@ export class UsersService {
     findAll() {
         return this.users
     }
-    findOne(id: string): User {
-        return this.users.find((user) => user.id === id) as User
+    findOne(id: number): User {
+        const user = this.users.find((user) => user.id === id) as User
+        if (!user) {
+            throw new NotFoundException('User not found')
+        }
+        return user
     }
-    create(user: User): User {
-        const newId = (this.users.length + 1).toString()
+    create(userCreate: CreateUserDto): User {
+        const newId = this.users.length + 1
         const newUser: User = {
-            ...user,
             id: newId,
+            ...userCreate,
         }
         this.users.push(newUser)
         return newUser
     }
-    update(id: string, user: User): User {
+    update(id: number, updateUser: UpdateUserDto): User {
         const index = this.users.findIndex((user) => user.id == id)
-        this.users[index] = user
+        if (index === -1) {
+            throw new NotFoundException('User not found')
+        }
+        this.users[index] = { ...updateUser, id }
         return this.users[index]
     }
-    delete(id: string): string {
+    delete(id: number): string {
         const index = this.users.findIndex((user) => user.id === id)
         if (index === -1) {
-            return `Utilisateur introuvable`
+            throw new NotFoundException('User not found')
         }
         this.users.splice(index, 1)
         return `L'utilisateur ${id} a bien ete supprimer`

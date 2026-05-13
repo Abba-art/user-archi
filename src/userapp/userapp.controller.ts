@@ -1,34 +1,57 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UserappService } from './userapp.service';
-import { CreateUserappDto } from './dto/create-userapp.dto';
-import { UpdateUserappDto } from './dto/update-userapp.dto';
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Patch,
+    Param,
+    Delete,
+    HttpCode,
+    Query,
+    ParseIntPipe,
+} from '@nestjs/common'
+import { UserappService } from './userapp.service'
+import { Prisma } from '@prisma/client'
 
 @Controller('userapp')
 export class UserappController {
-  constructor(private readonly userappService: UserappService) {}
+    constructor(private readonly userappService: UserappService) {}
 
-  @Post()
-  create(@Body() createUserappDto: CreateUserappDto) {
-    return this.userappService.create(createUserappDto);
-  }
+    @Post()
+    @HttpCode(201)
+    create(@Body() createUser: Prisma.UserCreateInput) {
+        const user = this.userappService.create(createUser)
+        return user
+    }
 
-  @Get()
-  findAll() {
-    return this.userappService.findAll();
-  }
+    @Get()
+    @HttpCode(200)
+    findAll(@Query('role') role: string) {
+        const users = this.userappService.findAll(role)
+        return users
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userappService.findOne(+id);
-  }
+    @Get(':id')
+    @HttpCode(200)
+    findOne(@Param('id', ParseIntPipe) id: number) {
+        const user = this.userappService.findOne(id)
+        return user
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserappDto: UpdateUserappDto) {
-    return this.userappService.update(+id, updateUserappDto);
-  }
+    @Patch(':id')
+    @HttpCode(200)
+    update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateUser: Prisma.UserUpdateInput,
+    ) {
+        const user = this.userappService.update(id, updateUser)
+        return user
+    }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userappService.remove(+id);
-  }
+    @Delete(':id')
+    @HttpCode(200)
+    remove(@Param('id', ParseIntPipe) id: number) {
+        const user = this.userappService.remove(id)
+        return user
+    }
 }
